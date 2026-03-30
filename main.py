@@ -11,20 +11,21 @@ from tensorflow.keras import layers, models
 @st.cache_resource
 def load_model():
     
-    base_model = MobileNetV2(
-        input_shape=(224, 224, 3),
-        include_top=False,
-        weights=None  # IMPORTANT: no downloading
-    )
+    # base_model = MobileNetV2(
+    #     input_shape=(224, 224, 3),
+    #     include_top=False,
+    #     weights=None  # IMPORTANT: no downloading
+    # )
 
-    x = base_model.output
-    x = layers.GlobalAveragePooling2D()(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Dense(128, activation='relu')(x)
-    x = layers.Dropout(0.5)(x)
-    outputs = layers.Dense(7, activation='softmax')(x)
+    # x = base_model.output
+    # x = layers.GlobalAveragePooling2D()(x)
+    # x = layers.BatchNormalization()(x)
+    # x = layers.Dense(128, activation='relu')(x)
+    # x = layers.Dropout(0.5)(x)
+    # outputs = layers.Dense(7, activation='softmax')(x)
 
-    model = models.Model(inputs=base_model.input, outputs=outputs)
+    # model = models.Model(inputs=base_model.input, outputs=outputs)
+    model = tf.keras.models.load_model("model.h5", compile=False)
 
     return model
 
