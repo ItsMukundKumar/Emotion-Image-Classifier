@@ -73,7 +73,7 @@ project/
 <ol>
 <li><b>Clone repository</b></li>
 
-<pre>git clone https://github.com/your-username/emotion-classifier.git
+<pre>git clone https://github.com/ItsMukundKumar/Emotion-Image-Classifier.git
 cd emotion-classifier</pre>
 
 <li><b>Install dependencies</b></li>
@@ -131,8 +131,8 @@ Feel free to fork this repository and enhance the model or UI.
 <h2>📬 Contact</h2>
 
 <p>
-🔗 Add your LinkedIn<br>
-💻 Add your GitHub
+🔗 https://www.linkedin.com/in/mukund-kumar-shah/<br>
+💻 https://github.com/ItsMukundKumar
 </p>
 
 ---
