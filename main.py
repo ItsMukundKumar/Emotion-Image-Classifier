@@ -11,7 +11,7 @@ IMG_SIZE = (224, 224)
 # Load model
 @st.cache_resource
 def load_model():
-    model = tf.keras.models.load_model("model.keras")
+    model = tf.keras.models.load_model("model.keras", compile=False)
     return model
 
 model = load_model()
