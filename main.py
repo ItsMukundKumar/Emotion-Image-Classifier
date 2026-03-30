@@ -1,32 +1,17 @@
 import streamlit as st
+import tensorflow as tf
 import numpy as np
 from PIL import Image
-import tensorflow as tf
-from tensorflow.keras.applications import MobileNetV2
-from tensorflow.keras import layers, models
 
-# -----------------------------
-# Load Model (Rebuilt)
-# -----------------------------
+# ---------------------------
+# CONFIG
+# ---------------------------
+IMG_SIZE = (224, 224)
+
+# Load model
 @st.cache_resource
 def load_model():
-    
-    # base_model = MobileNetV2(
-    #     input_shape=(224, 224, 3),
-    #     include_top=False,
-    #     weights=None  # IMPORTANT: no downloading
-    # )
-
-    # x = base_model.output
-    # x = layers.GlobalAveragePooling2D()(x)
-    # x = layers.BatchNormalization()(x)
-    # x = layers.Dense(128, activation='relu')(x)
-    # x = layers.Dropout(0.5)(x)
-    # outputs = layers.Dense(7, activation='softmax')(x)
-
-    # model = models.Model(inputs=base_model.input, outputs=outputs)
-    model = tf.keras.models.load_model("model.h5", compile=False)
-
+    model = tf.keras.models.load_model("model.keras")
     return model
 
 model = load_model()
@@ -36,31 +21,107 @@ class_names = [
     "happy", "neutral", "sad", "surprise"
 ]
 
-# -----------------------------
-# Image Preprocessing
-# -----------------------------
+# ---------------------------
+# CUSTOM CSS (HTML Styling)
+# ---------------------------
+st.markdown("""
+    <style>
+    .main-title {
+        text-align: center;
+        font-size: 40px;
+        font-weight: bold;
+        color: #4A90E2;
+    }
+    .sub-text {
+        text-align: center;
+        color: gray;
+        margin-bottom: 20px;
+    }
+    .prediction-box {
+        padding: 20px;
+        border-radius: 15px;
+        background-color: #f0f2f6;
+        text-align: center;
+        margin-top: 20px;
+    }
+    .emotion {
+        font-size: 28px;
+        font-weight: bold;
+        color: #333;
+    }
+    .confidence {
+        font-size: 20px;
+        color: #666;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# ---------------------------
+# UI
+# ---------------------------
+st.markdown('<div class="main-title">🧠 Emotion Classifier</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-text">Upload an image and click predict</div>', unsafe_allow_html=True)
+
+uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
+
+# ---------------------------
+# PREPROCESS
+# ---------------------------
 def preprocess_image(image):
-    image = image.resize((224, 224))
+    image = image.resize(IMG_SIZE)
     image = np.array(image) / 255.0
     image = np.expand_dims(image, axis=0)
     return image
 
-# -----------------------------
-# UI
-# -----------------------------
-st.title("Emotion Image Classifier")
-
-uploaded_file = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
-
+# ---------------------------
+# DISPLAY IMAGE
+# ---------------------------
 if uploaded_file is not None:
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    image = Image.open(uploaded_file).convert("RGB")
+    st.image(image, caption="Uploaded Image", use_container_width=True)
 
-    img = preprocess_image(image)
+    # Predict Button
+    if st.button("🔍 Predict"):
+        img_array = preprocess_image(image)
 
-    preds = model.predict(img)
-    pred_class = class_names[np.argmax(preds)]
-    confidence = np.max(preds)
+        prediction = model.predict(img_array)
+        predicted_class = class_names[np.argmax(prediction)]
+        confidence = np.max(prediction)
 
-    st.write(f"Prediction: {pred_class}")
-    st.write(f"Confidence: {confidence:.2f}")
+        # ---------------------------
+        # OUTPUT (Styled)
+        # ---------------------------
+        st.markdown(f"""
+            <div class="prediction-box">
+                <div class="emotion">Emotion: {predicted_class}</div>
+                <div class="confidence">Confidence: {confidence*100:.2f}%</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # Progress bar
+        st.progress(float(confidence))
+
+        # ---------------------------
+        # All probabilities
+        # ---------------------------
+        st.subheader("Class Probabilities")
+
+        for i, prob in enumerate(prediction[0]):
+            st.write(f"{class_names[i]}: {prob*100:.2f}%")
+
+# ---------------------------
+# DISCLAIMER
+# ---------------------------
+st.markdown("---")
+
+st.markdown("""
+<div style="
+    text-align:center; 
+    font-size:14px; 
+    color:#888; 
+    padding:10px;
+">
+⚠️ <b>Note:</b> This model has limited accuracy (~50%) and is intended for educational and demonstration purposes only. 
+Results may not be reliable for real-world applications.
+</div>
+""", unsafe_allow_html=True)
